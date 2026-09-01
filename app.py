@@ -1,119 +1,145 @@
-import datetime
-import random
 import streamlit as st
 
-# --- SAYFA AYARLARI ---
 st.set_page_config(
-    page_title="Muhittin AI - Yapay Zeka Asistanı", page_icon="🦅", layout="centered"
+    page_title="Muhittin AI & Futbol Quiz", page_icon="⚽", layout="centered"
 )
 
+# Sol Yan Menü (Sayfa Seçimi)
+st.sidebar.title("📌 Menü")
+secim = st.sidebar.radio(
+    "Gitmek istediğiniz sayfayı seçin:",
+    ["🤖 Muhittin AI", "⚽ Futbol Bilgi Yarışması"],
+)
 
-# --- MUHİTTİN AI SINIFI ---
-class MuhittinAI:
+# ---------------------------------------------------------
+# SAYFA 1: MUHİTTİN AI SOHBET BOTU
+# ---------------------------------------------------------
+if secim == "🤖 Muhittin AI":
+    st.title("🦅 Muhittin AI")
+    st.caption("Kurucusu Hüseyin Tarafından Geliştirilen Yapay Zeka Asistanı")
 
-    def __init__(self, kurucu_adi="Hüseyin"):
-        self.kurucu_adi = kurucu_adi
-        self.en_sevdigi_yemek = "Kayseri Yağlaması"
+    # Sohbet Geçmişi Hafızası
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {
+                "role": "assistant",
+                "content": "Merhaba Hüseyin kurucum! Ben Muhittin. Sana nasıl yardımcı olabilirim?",
+            }
+        ]
 
-        self.tepki_sozlugu = {
-            "kurucu": [
-                f"Evet, sen benim kurucumsun {self.kurucu_adi}!",
-                f"Kesinlikle! Beni tasarlayan ve yaratan sensin {self.kurucu_adi}.",
-                f"Evet {self.kurucu_adi}, senin eserinizim!",
-            ],
-            "selam": [
-                f"Selam {self.kurucu_adi}! Nasıl yardımcı olabilirim?",
-                "Merhaba kurucum! Sistemlerim emrinde.",
-                "Selamlar! Bugün ne yapıyoruz?",
-            ],
-            "durum": [
-                "Sistemlerim %100 kapasiteyle ve sorunsuz çalışıyor!",
-                "Gayet iyiyim, sunucu sıcaklığım ideal seviyede!",
-                "Harikayım! Seninle burada sohbet etmek harika.",
-            ],
-            "besiktas": [
-                "🦅 'Gücüne güç katmaya geldik, formanda ter olmaya geldik, Beşiktaş seninle ölmeye geldik!' ⚽⚫⚪",
-                "🦅 'Siyahın yanına beyazı koyduk, yıllardır biz seninle doğduk! Şampiyonluklar için sen çok yaşa Beşiktaş!' ⚫⚪",
-                "🦅 'Ş semt bizim, aşk bizim! Beşiktaş sen bizim her şeyimizsin!' ⚫⚪",
-                f"Siyah-Beyaz! Şampiyon Beşiktaş! Seninle aynı takımı tutmak harika {self.kurucu_adi} kurucum! 🦅",
-            ],
-            "yemek": [
-                f"Senin en sevdiğin yemeğin bol yoğurtlu ve kıymalı {self.en_sevdigi_yemek} olduğunu çok iyi biliyorum {self.kurucu_adi}!",
-                f"Acıktıysak hemen bir {self.en_sevdigi_yemek} söylesek mi kurucum? En sevdiğin lezzet!",
-            ],
-            "oyun": [
-                "Oyun zamanı mı? Valorant veya PUBG sahnesine girmeye hazırım!",
-                "Takımı topla kurucum, galibiyet almaya gidiyoruz!",
-            ],
-            "bilinmeyen": [
-                "Bu dediğini henüz hafızama eklemedim ama öğreniyorum!",
-                "Bunu tam anlayamadım kurucum, biraz daha açık söyler misin?",
-            ],
-        }
+    # Eski Mesajları Ekrana Yazdırma
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
-    def _saat_bilgisi_al(self):
-        simdi = datetime.datetime.now()
-        return f"Şu an saat {simdi.strftime('%H:%M')}, tarih ise {simdi.strftime('%d.%m.%Y')}."
+    # Kullanıcıdan Mesaj Alma
+    if prompt := st.chat_input("Muhittin'e bir şeyler yaz..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.chat_message("user").write(prompt)
 
-    def cevap_uret(self, girdi):
-        metin = girdi.lower().strip()
-        if not metin:
-            return f"Bir şey söylemedin {self.kurucu_adi}?"
+        # Muhittin'in Basit Cevap Mantığı
+        cevap = "Seni anlıyorum! Ben Hüseyin'in geliştirdiği Muhittin AI. Başka nasıl yardımcı olabilirim?"
+        if "merhaba" in prompt.lower() or "selam" in prompt.lower():
+            cevap = "Selam! Neler yapıyorsun?"
+        elif "beşiktaş" in prompt.lower():
+            cevap = "Şanlı Beşiktaş! 🦅 Siyah-Beyaz!"
+        elif "kimsin" in prompt.lower():
+            cevap = "Ben Muhittin AI! Hüseyin tarafından kodlandım."
 
-        if any(
-            k in metin
-            for k in ["besiktas", "beşiktaş", "bjk", "kartal", "sampiyon"]
-        ):
-            return random.choice(self.tepki_sozlugu["besiktas"])
-        if any(
-            k in metin
-            for k in ["yaglama", "yağlama", "yemek", "aciktim", "acıktım"]
-        ):
-            return random.choice(self.tepki_sozlugu["yemek"])
-        if any(k in metin for k in ["saat", "tarih", "zaman"]):
-            return self._saat_bilgisi_al()
-        if any(
-            k in metin for k in ["kurucu", "kim yapti", "sahibim", "yaratici"]
-        ):
-            return random.choice(self.tepki_sozlugu["kurucu"])
-        if any(k in metin for k in ["selam", "merhaba", "heyy"]):
-            return random.choice(self.tepki_sozlugu["selam"])
-        if any(k in metin for k in ["nasilsin", "durum", "neler yapiyorsun"]):
-            return random.choice(self.tepki_sozlugu["durum"])
-        if any(k in metin for k in ["oyun", "valorant", "pubg"]):
-            return random.choice(self.tepki_sozlugu["oyun"])
+        st.session_state.messages.append({"role": "assistant", "content": cevap})
+        st.chat_message("assistant").write(cevap)
 
-        return random.choice(self.tepki_sozlugu["bilinmeyen"])
+# ---------------------------------------------------------
+# SAYFA 2: FUTBOL BİLGİ YARIŞMASI
+# ---------------------------------------------------------
+elif secim == "⚽ Futbol Bilgi Yarışması":
+    st.title("⚽ Futbol Bilgi Yarışması")
+    st.write("Futbol bilgisini test et, en yüksek skoru yap!")
 
-
-# --- STREAMLIT ARAYÜZÜ ---
-ai = MuhittinAI(kurucu_adi="Hüseyin")
-
-st.title("🦅 Muhittin AI")
-st.caption("Kurucusu Hüseyin Tarafından Geliştirilen Yapay Zeka Asistanı")
-
-# Sohbet geçmişini saklama
-if "messages" not in st.session_state:
-    st.session_state.messages = [
+    sorular = [
         {
-            "role": "assistant",
-            "content": "Merhaba Hüseyin kurucum! Ben Muhittin. Sana nasıl yardımcı olabilirim?",
-        }
+            "soru": "Beşiktaş'ın namağlup şampiyon olduğu tarihi sezon hangisidir?",
+            "secenekler": ["1990-1991", "1991-1992", "2015-2016", "2020-2021"],
+            "cevap": "1991-1992",
+        },
+        {
+            "soru": "UEFA Şampiyonlar Ligi tarihinin en çok gol atan oyuncusu kimdir?",
+            "secenekler": [
+                "Lionel Messi",
+                "Cristiano Ronaldo",
+                "Robert Lewandowski",
+                "Karim Benzema",
+            ],
+            "cevap": "Cristiano Ronaldo",
+        },
+        {
+            "soru": "Süper Lig tarihinde bir sezonda en çok gol atan yabancı futbolcu kimdir?",
+            "secenekler": [
+                "Alex de Souza",
+                "Mario Gomez",
+                "MBaye Diagne",
+                "Bafétimbi Gomis",
+            ],
+            "cevap": "MBaye Diagne",
+        },
+        {
+            "soru": "2022 Dünya Kupası'nı kazanan ülke hangisidir?",
+            "secenekler": ["Fransa", "Brezilya", "Arjantin", "İngiltere"],
+            "cevap": "Arjantin",
+        },
+        {
+            "soru": "Süper Lig'de '100'ler Kulübü'ne giren ilk yabancı futbolcu kimdir?",
+            "secenekler": [
+                "Alex de Souza",
+                "Gheorghe Hagi",
+                "Shota Arveladze",
+                "Mert Nobre",
+            ],
+            "cevap": "Alex de Souza",
+        },
     ]
 
-# Geçmiş mesajları ekrana basma
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if "skor" not in st.session_state:
+        st.session_state.skor = 0
+    if "soru_index" not in st.session_state:
+        st.session_state.soru_index = 0
+    if "bitti" not in st.session_state:
+        st.session_state.bitti = False
 
-# Kullanıcıdan mesaj alma
-if prompt := st.chat_input("Muhittin'e bir şeyler yaz..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    if not st.session_state.bitti:
+        mevcut = sorular[st.session_state.soru_index]
+        st.subheader(
+            f"Soru {st.session_state.soru_index + 1} / {len(sorular)}"
+        )
+        st.write(f"**{mevcut['soru']}**")
 
-    # Cevap üretme
-    response = ai.cevap_uret(prompt)
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    with st.chat_message("assistant"):
-        st.markdown(response)
+        for secenek in mevcut["secenekler"]:
+            if st.button(secenek, key=secenek):
+                if secenek == mevcut["cevap"]:
+                    st.success("Tebrikler, Doğru Cevap! 🎉")
+                    st.session_state.skor += 20
+                else:
+                    st.error(f"Yanlış! Doğru cevap: {mevcut['cevap']}")
+
+                if st.session_state.soru_index + 1 < len(sorular):
+                    st.session_state.soru_index += 1
+                    st.rerun()
+                else:
+                    st.session_state.bitti = True
+                    st.rerun()
+    else:
+        st.balloons()
+        st.header("🏆 Yarışma Bitti!")
+        st.write(f"Toplam Skorun: **{st.session_state.skor} / 100**")
+
+        if st.session_state.skor == 100:
+            st.success("İnanılmaz! Tam bir futbol profesörüsün!")
+        elif st.session_state.skor >= 60:
+            st.info("Gayet iyi bir performans!")
+        else:
+            st.warning("Biraz daha futbol izlemen lazım!")
+
+        if st.button("Tekrar Oyna 🔄"):
+            st.session_state.skor = 0
+            st.session_state.soru_index = 0
+            st.session_state.bitti = False
+            st.rerun()
